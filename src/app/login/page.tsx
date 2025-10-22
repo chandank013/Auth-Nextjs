@@ -13,8 +13,10 @@ export default function LoginPage() {
 
   // Enable button only if both fields are filled
   useEffect(() => {
-    if (user.email && user.password) setButtonDisabled(false);
-    else setButtonDisabled(true);
+    if (user.email.length > 0 && user.password.length > 0) 
+      setButtonDisabled(false);
+    else 
+      setButtonDisabled(true);
   }, [user]);
 
   const onLogin = async () => {
