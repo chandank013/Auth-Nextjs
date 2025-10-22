@@ -1,27 +1,46 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
+import { toast } from "react-hot-toast";
 
 export default function LoginPage() {
-  const [user, setUser] = React.useState({
-    email: "",
-    password: "",
-  });
+  const router = useRouter();
+  const [user, setUser] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+
+  // Enable button only if both fields are filled
+  useEffect(() => {
+    if (user.email && user.password) setButtonDisabled(false);
+    else setButtonDisabled(true);
+  }, [user]);
 
   const onLogin = async () => {
-    console.log("Logging in:", user);
-    // Example API call:
-    // await axios.post("/api/login", user)
+    try {
+      setLoading(true);
+      const response = await axios.post("/api/users/login", user);
+      console.log("Login success:", response.data);
+      toast.success("Login successful!");
+      router.push("/profile"); // redirect to profile page
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.error || error.message || "Login failed";
+      console.error("Login failed:", message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      {/* Card Container */}
       <div className="bg-gray-800 p-10 rounded-2xl shadow-xl w-full max-w-md">
-        <h1 className="text-white text-3xl font-bold mb-6 text-center">Login</h1>
-        
+        <h1 className="text-white text-3xl font-bold mb-6 text-center">
+          {loading ? "Processing..." : "Login"}
+        </h1>
+
         <label htmlFor="email" className="text-white mb-1 block">Email</label>
         <input
           type="text"
@@ -45,9 +64,14 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={onLogin}
-          className="w-full px-6 py-2 mt-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-200"
+          disabled={buttonDisabled}
+          className={`w-full px-6 py-2 mt-4 text-white rounded-lg transition duration-200 focus:outline-none focus:ring-2 ${
+            buttonDisabled
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-400"
+          }`}
         >
-          Login Here
+          {loading ? "Processing..." : "Login Here"}
         </button>
 
         <p className="text-center mt-4 text-white">
