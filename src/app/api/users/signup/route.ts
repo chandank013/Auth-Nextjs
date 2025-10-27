@@ -2,17 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
 import { connect } from "@/dbConfig/dbConfig";
 import User from "@/models/userModel";
+import { sendEmail } from "@/helpers/mailer";
 
 connect();
 
 export async function POST(request: NextRequest) {
   try {
+    // Parse incoming request data
     const { username, email, password } = await request.json();
 
+    // Validate input
     if (!username || !email || !password) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
+    // Check for existing user
     const existingUser = await User.findOne({
       $or: [{ email }, { username }],
     });
@@ -21,14 +25,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Username or email already exists" }, { status: 400 });
     }
 
+    // Hash password
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(password, salt);
 
-    const newUser = await User.create({ username, email, password: hashedPassword });
+    // Create new user
+    const newUser = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
 
+    // Send verification email after user is created
+    await sendEmail({ email, emailType: "VERIFY", userId: newUser._id });
+
+    // Return success response
     return NextResponse.json(
       {
-        message: "User registered successfully!",
+        message: "User registered successfully! Verification email sent.",
         success: true,
         user: {
           id: newUser._id,

@@ -75,7 +75,15 @@ export default function LoginPage() {
         >
           {loading ? "Processing..." : "Login Here"}
         </button>
-
+        <p className="text-sm text-right mt-2">
+          <a
+            href="/forgotpassword"
+            className="text-indigo-600 hover:text-indigo-800 font-medium"
+          >
+            Forgot Password?
+          </a>
+        </p>
+        
         <p className="text-center mt-4 text-white">
           Don't have an account?{" "}
           <Link href="/signup" className="text-blue-400 underline">
